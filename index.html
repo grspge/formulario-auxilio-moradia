@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário - Processo Auxílio-Moradia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+        
+        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .section-title {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            margin: 20px 0 15px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        button {
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background-color: #27ae60;
+        }
+        
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .currency {
+            position: relative;
+        }
+        
+        .currency::before {
+            content: "R$";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+        
+        .currency input {
+            padding-left: 30px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .autarquia-field, .holerites-field {
+            margin-top: 10px;
+        }
+        
+        /* Estilos para a página de impressão */
+        .resumo-impressao {
+            display: none;
+            background: white;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .resumo-impressao.show {
+            display: block;
+        }
+        
+        .resumo-impressao h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .resumo-impressao .info-item {
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+        
+        .resumo-impressao .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .resumo-impressao .info-value {
+            color: #34495e;
+        }
+        
+        .resumo-impressao .alert-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .resumo-impressao .alert-box.success {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .resumo-impressao .alert-box.danger {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .resumo-impressao .alertas-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        .resumo-impressao .alertas-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .resumo-impressao .data-geracao {
+            text-align: right;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 30px;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        @media print {
+            body { 
+                background: white; 
+                margin: 0;
+                padding: 0;
+            }
+            .container { 
+                display: none; 
+            }
+            .resumo-impressao {
+                display: block !important;
+                padding: 20px;
+                box-shadow: none;
+            }
+            .btn-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Informações do Processo - Auxílio-Moradia</h1>
+        
+        <form id="processoForm">
+            <div class="section-title">Dados da Petição Inicial</div>
+            
+            <div class="form-group">
+                <label for="dataAjuizamento">Data de Ajuizamento:</label>
+                <input type="date" id="dataAjuizamento" name="dataAjuizamento">
+            </div>
+            
+            <div class="section-title">Dados das Partes</div>
+            
+            <div class="form-group">
+                <label for="nomeRequerente">Nome do Requerente:</label>
+                <input type="text" id="nomeRequerente" name="nomeRequerente">
+            </div>
+            
+            <div class="form-group">
+                <label>Requerido (em face de):</label>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="estadoSaoPaulo" name="estadoSaoPaulo">
+                    <label for="estadoSaoPaulo">Estado de São Paulo</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="incluirAutarquia" name="incluirAutarquia">
+                    <label for="incluirAutarquia">Incluir Autarquia</label>
+                </div>
+                
+                <div id="campoAutarquia" class="autarquia-field hidden">
+                    <input type="text" id="nomeAutarquia" name="nomeAutarquia" placeholder="Digite o nome da autarquia">
+                </div>
+            </div>
+            
+            <div class="section-title">Informações do Vínculo Hospitalar</div>
+            
+            <div class="form-group">
+                <label for="localCurso">Local onde cursou:</label>
+                <input type="text" id="localCurso" name="localCurso">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dataInicio">Data de Início do Vínculo:</label>
+                    <input type="date" id="dataInicio" name="dataInicio">
+                </div>
+                <div class="form-group">
+                    <label for="dataFim">Data de Término do Vínculo:</label>
+                    <input type="date" id="dataFim" name="dataFim">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipoInstituicao">Tipo de Instituição:</label>
+                <select id="tipoInstituicao" name="tipoInstituicao">
+                    <option value="">Selecione...</option>
+                    <option value="administracao_direta">Administração Direta</option>
+                    <option value="autarquia">Autarquia</option>
+                    <option value="particular">Particular</option>
+                </select>
+            </div>
+            
+            <div class="section-title">Informações financeiras declaradas pela parte autora</div>
+            
+            <div class="form-group">
+                <label for="valorBolsa">Valor da Bolsa-Auxílio (R$):</label>
+                <div class="currency">
+                    <input type="number" id="valorBolsa" name="valorBolsa" step="0.01" placeholder="0,00">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="observacoesFinanceiras">Observações sobre valores:</label>
+                <textarea id="observacoesFinanceiras" name="observacoesFinanceiras" rows="3" placeholder="Ex: Valor foi alterado durante o período, houve reajustes, etc."></textarea>
+            </div>
+            
+            <div class="section-title">Documentação e Alegações</div>
+            
+            <div class="form-group">
+                <label for="comprovaResidencia">Comprovação de Residência Médica:</label>
+                <input type="text" id="comprovaResidencia" name="comprovaResidencia" placeholder="Ex: fls. 10/12">
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="alegouNecessidade" name="alegouNecessidade">
+                <label for="alegouNecessidade">Alegou necessidade</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="juntouHolerites" name="juntouHolerites">
+                <label for="juntouHolerites">Juntou holerites</label>
+            </div>
+            
+            <div id="campoHolerites" class="holerites-field hidden">
+                <input type="text" id="paginaHolerites" name="paginaHolerites" placeholder="Ex: fls. 15/18">
+            </div>
+            
+            <div class="section-title">Observações</div>
+            
+            <div class="form-group">
+                <label for="observacoes">Observações Adicionais:</label>
+                <textarea id="observacoes" name="observacoes" rows="4" placeholder="Digite observações relevantes sobre o processo..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" onclick="gerarResumo()">Gerar Resumo</button>
+                <button type="button" onclick="limparFormulario()">Limpar Formulário</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Página de resumo para impressão -->
+    <div id="resumoImpressao" class="resumo-impressao">
+        <h1>RESUMO DO PROCESSO - AUXÍLIO-MORADIA</h1>
+        <div id="conteudoResumoImpressao"></div>
+        <div class="data-geracao">
+            Documento gerado em: <span id="dataGeracao"></span>
+        </div>
+        <button class="btn-print" onclick="window.print()" style="margin-top: 20px; background-color: #007bff;">🖨️ Imprimir PDF</button>
+    </div>
+
+    <script>
+        // Função para converter data para formato brasileiro
+        function formatarDataBrasil(dataISO) {
+            if (!dataISO) return 'Não informado';
+            const data = new Date(dataISO + 'T00:00:00');
+            return data.toLocaleDateString('pt-BR');
+        }
+        
+        // Mostrar/ocultar campo de autarquia
+        document.getElementById('incluirAutarquia').addEventListener('change', function() {
+            const campoAutarquia = document.getElementById('campoAutarquia');
+            if (this.checked) {
+                campoAutarquia.classList.remove('hidden');
+            } else {
+                campoAutarquia.classList.add('hidden');
+                document.getElementById('nomeAutarquia').value = '';
+            }
+        });
+        
+        // Mostrar/ocultar campo de página dos holerites
+        document.getElementById('juntouHolerites').addEventListener('change', function() {
+            const campoHolerites = document.getElementById('campoHolerites');
+            if (this.checked) {
+                campoHolerites.classList.remove('hidden');
+            } else {
+                campoHolerites.classList.add('hidden');
+                document.getElementById('paginaHolerites').value = '';
+            }
+        });
+        
+        // Função para determinar status do curso automaticamente
+        function determinarStatusCurso() {
+            const dataFim = document.getElementById('dataFim').value;
+            if (!dataFim) return 'Não informado';
+            
+            const hoje = new Date();
+            const termino = new Date(dataFim);
+            
+            if (termino > hoje) {
+                return 'Cursando';
+            } else {
+                return 'Concluído';
+            }
+        }
+        
+        // Função para verificar se deve alegar ilegitimidade
+        function deveAlegarIlegitimidade() {
+            const estadoMarcado = document.getElementById('estadoSaoPaulo').checked;
+            const tipoInstituicao = document.getElementById('tipoInstituicao').value;
+            return estadoMarcado && (tipoInstituicao === 'autarquia' || tipoInstituicao === 'particular');
+        }
+        
+        // Função para verificar prescrição
+        function verificarPrescricao() {
+            const dataAjuizamento = document.getElementById('dataAjuizamento').value;
+            const dataInicio = document.getElementById('dataInicio').value;
+            
+            if (dataAjuizamento && dataInicio) {
+                const ajuizamento = new Date(dataAjuizamento);
+                const inicio = new Date(dataInicio);
+                
+                const diffAnos = (ajuizamento - inicio) / (1000 * 60 * 60 * 24 * 365);
+                return diffAnos > 5;
+            }
+            return false;
+        }
+        
+        function gerarResumo() {
+            const form = document.getElementById('processoForm');
+            const formData = new FormData(form);
+            
+            // Ocultar formulário e mostrar resumo
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('resumoImpressao').classList.add('show');
+            
+            // Data de geração
+            const agora = new Date();
+            document.getElementById('dataGeracao').textContent = agora.toLocaleString('pt-BR');
+            
+            // Construir requeridos
+            let requeridos = [];
+            if (document.getElementById('estadoSaoPaulo').checked) {
+                requeridos.push('Estado de São Paulo');
+            }
+            if (document.getElementById('incluirAutarquia').checked && formData.get('nomeAutarquia')) {
+                requeridos.push(formData.get('nomeAutarquia'));
+            }
+            
+            // Status automático do curso
+            const statusCurso = determinarStatusCurso();
+            
+            const valorBolsa = formData.get('valorBolsa');
+            const valorFormatado = valorBolsa ? `R$ ${parseFloat(valorBolsa).toFixed(2).replace('.', ',')}` : 'Não informado';
+            
+            const tipoInstituicao = formData.get('tipoInstituicao');
+            const tipos = {
+                'administracao_direta': 'Administração Direta',
+                'autarquia': 'Autarquia',
+                'particular': 'Particular'
+            };
+            
+            // Formatar período com datas brasileiras
+            const dataInicioBR = formatarDataBrasil(formData.get('dataInicio'));
+            const dataFimBR = formatarDataBrasil(formData.get('dataFim'));
+            const periodoVinculo = (dataInicioBR !== 'Não informado' || dataFimBR !== 'Não informado') 
+                ? `${dataInicioBR} a ${dataFimBR}` 
+                : 'Não informado';
+            
+            let resumoHTML = `
+                <div class="info-item">
+                    <span class="info-label">Data de Ajuizamento:</span>
+                    <span class="info-value">${formatarDataBrasil(formData.get('dataAjuizamento'))}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Requerente:</span>
+                    <span class="info-value">${formData.get('nomeRequerente') || 'Não informado'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Requerido:</span>
+                    <span class="info-value">${requeridos.length > 0 ? requeridos.join(' e ') : 'Não informado'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Local do Curso:</span>
+                    <span class="info-value">${formData.get('localCurso') || 'Não informado'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Período do Vínculo:</span>
+                    <span class="info-value">${periodoVinculo}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status do Curso:</span>
+                    <span class="info-value">${statusCurso}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tipo de Instituição:</span>
+                    <span class="info-value">${tipoInstituicao ? tipos[tipoInstituicao] : 'Não informado'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor da Bolsa-Auxílio:</span>
+                    <span class="info-value">${valorFormatado}</span>
+                </div>
+                ${formData.get('observacoesFinanceiras') ? `
+                <div class="info-item">
+                    <span class="info-label">Observações Financeiras:</span>
+                    <span class="info-value">${formData.get('observacoesFinanceiras')}</span>
+                </div>` : ''}
+                <div class="info-item">
+                    <span class="info-label">Comprovação de Residência:</span>
+                    <span class="info-value">${formData.get('comprovaResidencia') || 'Não informado'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Alegou necessidade:</span>
+                    <span class="info-value">${document.getElementById('alegouNecessidade').checked ? 'Sim' : 'Não'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Juntou holerites:</span>
+                    <span class="info-value">${document.getElementById('juntouHolerites').checked ? 'Sim' : 'Não'}</span>
+                </div>
+                ${document.getElementById('juntouHolerites').checked && formData.get('paginaHolerites') ? `
+                <div class="info-item">
+                    <span class="info-label">Localização dos holerites:</span>
+                    <span class="info-value">${formData.get('paginaHolerites')}</span>
+                </div>` : ''}
+                ${formData.get('observacoes') ? `
+                <div class="info-item">
+                    <span class="info-label">Observações Adicionais:</span>
+                    <span class="info-value">${formData.get('observacoes')}</span>
+                </div>` : ''}
+            `;
+            
+            // Verificar alertas apenas no resumo
+            let alertas = [];
+            if (verificarPrescricao()) {
+                alertas.push({tipo: 'danger', texto: '⚠️ ATENÇÃO: Há mais de 5 anos entre o ajuizamento e o início do curso. Verificar possível prescrição!'});
+            }
+            if (tipoInstituicao === 'particular') {
+                alertas.push({tipo: 'warning', texto: '⚠️ ATENÇÃO: Instituição particular selecionada. Verificar competência e legitimidade processual.'});
+            }
+            if (deveAlegarIlegitimidade()) {
+                alertas.push({tipo: 'success', texto: '📝 ESTRATÉGIA: Alegar ilegitimidade do Estado'});
+            }
+            
+            // Adicionar alertas se houver
+            if (alertas.length > 0) {
+                resumoHTML += '<div class="alertas-section">';
+                resumoHTML += '<div class="alertas-title">Alertas e Lembretes</div>';
+                alertas.forEach(alerta => {
+                    resumoHTML += `<div class="alert-box ${alerta.tipo}">${alerta.texto}</div>`;
+                });
+                resumoHTML += '</div>';
+            }
+            
+            document.getElementById('conteudoResumoImpressao').innerHTML = resumoHTML;
+        }
+        
+        // Função para voltar ao formulário
+        function voltarFormulario() {
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('resumoImpressao').classList.remove('show');
+        }
+        
+        // Adicionar botão de voltar
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnPrint = document.querySelector('.btn-print');
+            if (btnPrint) {
+                const btnVoltar = document.createElement('button');
+                btnVoltar.textContent = '← Voltar ao Formulário';
+                btnVoltar.style.marginLeft = '10px';
+                btnVoltar.style.backgroundColor = '#6c757d';
+                btnVoltar.onclick = voltarFormulario;
+                btnPrint.parentNode.insertBefore(btnVoltar, btnPrint.nextSibling);
+            }
+        });
+        
+        function limparFormulario() {
+            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+                document.getElementById('processoForm').reset();
+                document.getElementById('campoAutarquia').classList.add('hidden');
+                document.getElementById('campoHolerites').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
