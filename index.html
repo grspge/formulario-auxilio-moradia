@@ -122,7 +122,7 @@
             display: none;
         }
         
-        .autarquia-field, .holerites-field {
+        .autarquia-field, .holerites-field, .outro-hospital-field {
             margin-top: 10px;
         }
         
@@ -184,6 +184,12 @@
         .resumo-impressao .alert-box.danger {
             background-color: #f8d7da;
             border-color: #dc3545;
+        }
+        
+        .resumo-impressao .alert-box.critical {
+            background-color: #721c24;
+            border-color: #721c24;
+            color: white;
         }
         
         .resumo-impressao .alertas-section {
@@ -269,7 +275,20 @@
             
             <div class="form-group">
                 <label for="localCurso">Local onde cursou:</label>
-                <input type="text" id="localCurso" name="localCurso">
+                <select id="localCurso" name="localCurso">
+                    <option value="">Selecione o hospital...</option>
+                    <option value="FAMERP - RIO PRETO">FAMERP - Rio Preto</option>
+                    <option value="HC FMRP USP - RIBEIRÃO PRETO">HC FMRP USP - Ribeirão Preto</option>
+                    <option value="HC CAPITAL">HC Capital (HC FMUSP)</option>
+                    <option value="HOSPITAL PRESIDENTE PRUDENTE">Hospital Presidente Prudente</option>
+                    <option value="FAMEMA">FAMEMA - Marília</option>
+                    <option value="IAMSPE">IAMSPE</option>
+                    <option value="outro">🔸 Outro (digitar manualmente)</option>
+                </select>
+                
+                <div id="campoOutroHospital" class="outro-hospital-field hidden">
+                    <input type="text" id="nomeOutroHospital" name="nomeOutroHospital" placeholder="Digite o nome completo do hospital">
+                </div>
             </div>
             
             <div class="form-row">
@@ -353,11 +372,111 @@
     </div>
 
     <script>
+        // Lista de hospitais que fornecem auxílio voluntariamente
+        const hospitaisComAuxilio = [
+            {
+                id: 'FAMERP - RIO PRETO',
+                dataInicio: '2023-04-04',
+                nomeCompleto: 'FAMERP - Rio Preto'
+            },
+            {
+                id: 'HC FMRP USP - RIBEIRÃO PRETO',
+                dataInicio: '2023-08-30',
+                nomeCompleto: 'HC FMRP USP - Ribeirão Preto'
+            },
+            {
+                id: 'HC CAPITAL',
+                dataInicio: '2020-01-01',
+                nomeCompleto: 'HC Capital'
+            },
+            {
+                id: 'HOSPITAL PRESIDENTE PRUDENTE',
+                dataInicio: '2025-03-01',
+                nomeCompleto: 'Hospital Presidente Prudente'
+            },
+            {
+                id: 'FAMEMA',
+                dataInicio: '2025-03-01',
+                nomeCompleto: 'FAMEMA'
+            },
+            {
+                id: 'IAMSPE',
+                dataInicio: '2025-04-22',
+                nomeCompleto: 'IAMSPE'
+            }
+        ];
+
         // Função para converter data para formato brasileiro
         function formatarDataBrasil(dataISO) {
             if (!dataISO) return 'Não informado';
             const data = new Date(dataISO + 'T00:00:00');
             return data.toLocaleDateString('pt-BR');
+        }
+        
+        // Função para verificar se há sobreposição de períodos
+        function verificarSobreposicaoPeriodos(inicioA, fimA, inicioB, fimB = null) {
+            const dataInicioA = new Date(inicioA);
+            const dataFimA = new Date(fimA);
+            const dataInicioB = new Date(inicioB);
+            const dataFimB = fimB ? new Date(fimB) : new Date(); // Se não tem fim, usa data atual
+            
+            // Verifica se há sobreposição
+            return dataInicioA <= dataFimB && dataFimA >= dataInicioB;
+        }
+        
+        // Função para obter o nome completo do hospital
+        function obterNomeHospital() {
+            const selectHospital = document.getElementById('localCurso').value;
+            if (selectHospital === 'outro') {
+                return document.getElementById('nomeOutroHospital').value || '';
+            }
+            return selectHospital;
+        }
+        
+        // Função para verificar auxílio voluntário
+        function verificarAuxilioVoluntario() {
+            const nomeHospital = obterNomeHospital();
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+            
+            if (!nomeHospital || !dataInicio || !dataFim) return null;
+            
+            // Procura o hospital na lista (busca exata para dropdown, busca por palavra-chave para "outro")
+            const selectHospital = document.getElementById('localCurso').value;
+            let hospitalEncontrado = null;
+            
+            if (selectHospital !== 'outro' && selectHospital !== '') {
+                // Hospital selecionado do dropdown
+                hospitalEncontrado = hospitaisComAuxilio.find(hospital => hospital.id === selectHospital);
+            } else if (selectHospital === 'outro') {
+                // Hospital digitado manualmente - busca por palavras-chave
+                const nomeDigitado = nomeHospital.toUpperCase();
+                hospitalEncontrado = hospitaisComAuxilio.find(hospital => 
+                    nomeDigitado.includes(hospital.id.split(' - ')[0]) || 
+                    hospital.nomeCompleto.toUpperCase().split(' ').some(palavra => 
+                        palavra.length > 3 && nomeDigitado.includes(palavra)
+                    )
+                );
+            }
+            
+            if (!hospitalEncontrado) return null;
+            
+            // Verifica se há sobreposição de períodos
+            const temSobreposicao = verificarSobreposicaoPeriodos(
+                dataInicio, 
+                dataFim, 
+                hospitalEncontrado.dataInicio
+            );
+            
+            if (temSobreposicao) {
+                return {
+                    hospital: hospitalEncontrado.nomeCompleto,
+                    dataInicioAuxilio: hospitalEncontrado.dataInicio,
+                    periodoResidencia: `${formatarDataBrasil(dataInicio)} a ${formatarDataBrasil(dataFim)}`
+                };
+            }
+            
+            return null;
         }
         
         // Mostrar/ocultar campo de autarquia
@@ -368,6 +487,17 @@
             } else {
                 campoAutarquia.classList.add('hidden');
                 document.getElementById('nomeAutarquia').value = '';
+            }
+        });
+        
+        // Mostrar/ocultar campo "outro hospital"
+        document.getElementById('localCurso').addEventListener('change', function() {
+            const campoOutroHospital = document.getElementById('campoOutroHospital');
+            if (this.value === 'outro') {
+                campoOutroHospital.classList.remove('hidden');
+            } else {
+                campoOutroHospital.classList.add('hidden');
+                document.getElementById('nomeOutroHospital').value = '';
             }
         });
         
@@ -404,16 +534,16 @@
             return estadoMarcado && (tipoInstituicao === 'autarquia' || tipoInstituicao === 'particular');
         }
         
-        // Função para verificar prescrição
+        // Função para verificar prescrição (entre ajuizamento e término do curso)
         function verificarPrescricao() {
             const dataAjuizamento = document.getElementById('dataAjuizamento').value;
-            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
             
-            if (dataAjuizamento && dataInicio) {
+            if (dataAjuizamento && dataFim) {
                 const ajuizamento = new Date(dataAjuizamento);
-                const inicio = new Date(dataInicio);
+                const termino = new Date(dataFim);
                 
-                const diffAnos = (ajuizamento - inicio) / (1000 * 60 * 60 * 24 * 365);
+                const diffAnos = (ajuizamento - termino) / (1000 * 60 * 60 * 24 * 365);
                 return diffAnos > 5;
             }
             return false;
@@ -453,6 +583,9 @@
                 'particular': 'Particular'
             };
             
+            // Obter nome do hospital
+            const nomeHospitalCompleto = obterNomeHospital() || 'Não informado';
+            
             // Formatar período com datas brasileiras
             const dataInicioBR = formatarDataBrasil(formData.get('dataInicio'));
             const dataFimBR = formatarDataBrasil(formData.get('dataFim'));
@@ -475,7 +608,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Local do Curso:</span>
-                    <span class="info-value">${formData.get('localCurso') || 'Não informado'}</span>
+                    <span class="info-value">${nomeHospitalCompleto}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Período do Vínculo:</span>
@@ -524,8 +657,19 @@
             
             // Verificar alertas apenas no resumo
             let alertas = [];
+            
+            // Verificar auxílio voluntário (PRIORIDADE MÁXIMA)
+            const auxilioVoluntario = verificarAuxilioVoluntario();
+            if (auxilioVoluntario) {
+                alertas.push({
+                    tipo: 'critical', 
+                    texto: `🚨 ALERTA CRÍTICO: ${auxilioVoluntario.hospital} fornece auxílio-moradia voluntariamente desde ${formatarDataBrasil(auxilioVoluntario.dataInicioAuxilio)}. Período de residência: ${auxilioVoluntario.periodoResidencia}. PROCESSO PODE SER IMPROCEDENTE!`
+                });
+            }
+            
+            // Outros alertas
             if (verificarPrescricao()) {
-                alertas.push({tipo: 'danger', texto: '⚠️ ATENÇÃO: Há mais de 5 anos entre o ajuizamento e o início do curso. Verificar possível prescrição!'});
+                alertas.push({tipo: 'danger', texto: '⚠️ ATENÇÃO: Há mais de 5 anos entre o ajuizamento e o término do curso. Verificar possível prescrição!'});
             }
             if (tipoInstituicao === 'particular') {
                 alertas.push({tipo: 'warning', texto: '⚠️ ATENÇÃO: Instituição particular selecionada. Verificar competência e legitimidade processual.'});
@@ -571,6 +715,7 @@
                 document.getElementById('processoForm').reset();
                 document.getElementById('campoAutarquia').classList.add('hidden');
                 document.getElementById('campoHolerites').classList.add('hidden');
+                document.getElementById('campoOutroHospital').classList.add('hidden');
             }
         }
     </script>
