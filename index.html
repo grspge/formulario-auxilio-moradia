@@ -534,16 +534,16 @@
             return estadoMarcado && (tipoInstituicao === 'autarquia' || tipoInstituicao === 'particular');
         }
         
-        // Função para verificar prescrição (entre ajuizamento e término do curso)
+        // Função para verificar prescrição (CORRIGIDA: entre ajuizamento e INÍCIO do curso)
         function verificarPrescricao() {
             const dataAjuizamento = document.getElementById('dataAjuizamento').value;
-            const dataFim = document.getElementById('dataFim').value;
+            const dataInicio = document.getElementById('dataInicio').value;
             
-            if (dataAjuizamento && dataFim) {
+            if (dataAjuizamento && dataInicio) {
                 const ajuizamento = new Date(dataAjuizamento);
-                const termino = new Date(dataFim);
+                const inicio = new Date(dataInicio);
                 
-                const diffAnos = (ajuizamento - termino) / (1000 * 60 * 60 * 24 * 365);
+                const diffAnos = (ajuizamento - inicio) / (1000 * 60 * 60 * 24 * 365);
                 return diffAnos > 5;
             }
             return false;
@@ -669,7 +669,7 @@
             
             // Outros alertas
             if (verificarPrescricao()) {
-                alertas.push({tipo: 'danger', texto: '⚠️ ATENÇÃO: Há mais de 5 anos entre o ajuizamento e o término do curso. Verificar possível prescrição!'});
+                alertas.push({tipo: 'danger', texto: '⚠️ ATENÇÃO: Há mais de 5 anos entre o ajuizamento e o início do curso. Verificar possível prescrição dos primeiros meses!'});
             }
             if (tipoInstituicao === 'particular') {
                 alertas.push({tipo: 'warning', texto: '⚠️ ATENÇÃO: Instituição particular selecionada. Verificar competência e legitimidade processual.'});
